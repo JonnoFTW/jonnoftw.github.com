@@ -16,26 +16,27 @@ In this post I will describe a method of generating images using a Markov Chain 
 
 At a high level, this algorithm works in the following manner:
 
-1. Read in a training `image` into an array of pixels
-2. Create a mapping `colourMap` from pixel colour to a pixel counter colour.
-3. For each `pixel` in `image`:
-  1. For each `neighbour` of `pixel`:
-    1. `mapping[pixel.colour][neighbour.colour] += 1`
-4. Create a blank `newImage`
-5. Choose a random `startingPosition` within the bounds of `newImage`
-6. Choose a random `startingState` from `mapping`
-7. Create a `stack` with `[startingPosition]`
-8. `image[startingPosition] = startingState`
-9. while `stack` is not empty:
-  1. `pixel = stack.pop()`
-  2. For each `neighbour` of `pixel`:
-   1. if `neighbour.isColoured`:
-     2. continue
-   1. `neighbour.isColoured = true`
-   1. Push `neighbour` to `stack`
-   2. `neighbour.colour = ` randomly chosen colour from `mapping[pixel.colour].keys()`. Probability distribution is `mapping[pixel.colour].counts() / sum(mapping[pixel.colour].counts())`
-10. Display `newImage`
-
+```
+Read in a training `image` into an array of pixels
+Create a mapping `colourMap` from pixel colour to a pixel counter colour.
+For each `pixel` in `image`:
+  For each `neighbour` of `pixel`:
+    `mapping[pixel.colour][neighbour.colour] += 1`
+Create a blank `newImage`
+Choose a random `startingPosition` within the bounds of `newImage`
+Choose a random `startingState` from `mapping`
+Create a `stack` with `[startingPosition]`
+`image[startingPosition] = startingState`
+while `stack` is not empty:
+  `pixel = stack.pop()`
+  For each `neighbour` of `pixel`:
+    if `neighbour.isColoured`:
+      continue
+    `neighbour.isColoured = true`
+    Push `neighbour` to `stack`
+    `neighbour.colour = ` randomly chosen colour from `mapping[pixel.colour].keys()`. Probability distribution is `mapping[pixel.colour].counts() / sum(mapping[pixel.colour].counts())`
+Display `newImage`
+```
 
 ### Outputs
 
