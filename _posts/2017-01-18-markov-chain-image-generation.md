@@ -9,7 +9,7 @@ tags: [python, image generation]
 
 ## Overview
 
-In this post I will describe a method of generating images using a Markov Chain built from a training image.
+In this post I will describe a method of generating images using a Markov Chain built from a training image. We train a markov chain to store pixel colours as the node values and the count of neighbouring pixel colours becomes the connection weight to neighbour nodes. To generate an image, we randomly walk through the chain and paint a pixel in the output image. The result is images that have a similar colour pallette to the original, but none of the coherence. They still look nice though.
 
 
 ### Description
@@ -26,27 +26,30 @@ At a high level, this algorithm works in the following manner:
 6. Choose a random `startingState` from `mapping`
 7. Create a `stack` with `[startingPosition]`
 8. `image[startingPosition] = startingState`
-8. while `stack` is not empty:
+9. while `stack` is not empty:
   1. `pixel = stack.pop()`
   2. For each `neighbour` of `pixel`:
+   1. if `neighbour.isColoured`:
+     2. continue
+   1. `neighbour.isColoured = true`
    1. Push `neighbour` to `stack`
    2. `neighbour.colour = ` randomly chosen colour from `mapping[pixel.colour].keys()`. Probability distribution is `mapping[pixel.colour].counts() / sum(mapping[pixel.colour].counts())`
-9. Display `newImage`
+10. Display `newImage`
 
 
 ### Outputs
 
 Here's some example outputs:
 
-[HomerInput](http://i.imgur.com/ql46UZL.png)
-[HomerGenerated](http://i.imgur.com/QDqCIF9.png)
+![HomerInput](http://i.imgur.com/ql46UZL.png)
+![HomerGenerated](http://i.imgur.com/QDqCIF9.png)
 
 An image generated from my black and white portrait:
 
-[MeGenerated](http://i.imgur.com/RtyeYAJ.png)
+![MeGenerated](http://i.imgur.com/RtyeYAJ.png)
 
-[Moon](http://i.imgur.com/j49UuqV.jpg?1)
-[MoonGenerated](http://i.imgur.com/0JiVWKh.png)
+![Moon](http://i.imgur.com/j49UuqV.jpg?1)
+![MoonGenerated](http://i.imgur.com/0JiVWKh.png)
 
 ### Code
 To run this you'll need python and the following packages installed:
@@ -59,7 +62,7 @@ Feel free to mess around with `bucket_size` and `four_neighbour`. In my testing 
 The final code is here:
 
 
-```
+```python
 from PIL import Image
 import numpy as np
 import pyprind
