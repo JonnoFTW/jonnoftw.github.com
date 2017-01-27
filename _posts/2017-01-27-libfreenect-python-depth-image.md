@@ -14,6 +14,8 @@ will display the output of the camera along with its depth readings. If you want
 way as the example program is not possible and requires extra coding. In this post I will supply code that does this in a performant manner. Follow the 
 instructions in the repo to install the library.
 
+![http://i.imgur.com/YdUE0gZ.png](Demonstration)
+
 # Pure Python Implementation
 
 This code is basically a python translation of the code here: https://github.com/OpenKinect/libfreenect/blob/master/examples/glview.c#L350-L402
