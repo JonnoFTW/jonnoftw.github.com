@@ -9,7 +9,7 @@ tags: []
 
 ## Viewing the Kinect Depth Reading Using Python
 
-[libfreenect2](https://github.com/OpenKinect/libfreenect) is a useful tool for reading the output of a Kinect camera. It offers some sample programs that 
+[libfreenect](https://github.com/OpenKinect/libfreenect) is a useful tool for reading the output of a Kinect camera. It offers some sample programs that 
 will display the output of the camera along with its depth readings. If you want to use the python bindings though, viewing the depth reading in the same
 way as the example program is not possible and requires extra coding. In this post I will supply code that does this in a performant manner. Follow the 
 instructions in the repo to install the library.
@@ -18,7 +18,7 @@ instructions in the repo to install the library.
 
 # Pure Python Implementation
 
-This code is basically a python translation of the code here: https://github.com/OpenKinect/libfreenect/blob/master/examples/glview.c#L350-L402
+This code is basically a python translation of the code here: [https://github.com/OpenKinect/libfreenect/blob/master/examples/glview.c#L350-L402](https://github.com/OpenKinect/libfreenect/blob/master/examples/glview.c#L350-L402)
 
 The difference here is that we generate every depth value to a colour before we start. The code uses numpy and pygame:
 
@@ -79,8 +79,8 @@ if __name__ == "__main__":
         fps_text = "FPS: {0:.2f}".format(fpsClock.get_fps())
         # draw the pixels
 
-        depth = np.rot90(get_depth()[0])
-        pixels = gamma[depth]
+        depth = np.rot90(get_depth()[0]) # get the depth readinngs from the camera
+        pixels = gamma[depth] # the colour pixels are the depth readings overlayed onto the gamma table
         temp_surface = pygame.Surface(disp_size)
         pygame.surfarray.blit_array(temp_surface, pixels)
         pygame.transform.scale(temp_surface, disp_size, screen)
