@@ -52,7 +52,7 @@ from other languages such as Java.
 
 In your IntelliJ IDE, go File -> Settings -> Tools -> External Tools -> Click the create button and fill out the form like so: 
 
-![IDE screenshot][https://i.imgur.com/9xL9KAm.png]
+![IDE screenshot](https://i.imgur.com/9xL9KAm.png)
 
 Next, create a filter from the "Output Filters" button. Create a new filter that has the following regex
 ```
@@ -61,4 +61,4 @@ $FILE_PATH$:$LINE$
 
 Now you can easily right click on a file, click External Tools -> Compile OpenCL
 
-![full run][https://i.imgur.com/xWabMqA.png]
+![full run](https://i.imgur.com/xWabMqA.png)
