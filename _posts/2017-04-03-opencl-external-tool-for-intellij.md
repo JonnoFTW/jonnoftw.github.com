@@ -32,7 +32,8 @@ if __name__ == "__main__":
             allstrings = [(src[i[0].regs[0][1] + 1:i[1].regs[0][0] - 1], i[0].regs[0][0]) for i in zip(docstrings[::2], docstrings[1::2])]
             strings, positions = zip(*[s for s in allstrings if "//CL-KERNEL" in s[0]])
             cl_src = "\n".join(strings)
-
+        elif fl.endswith('.cl'):
+            cl_src = src
         print("Compiling {} on {}".format(fname, dev))
         try:
             prog = cl.Program(ctx, cl_src).build(options=['-I', os.path.dirname(src_file.name)])
