@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Building Tensorflow with OpenCL support on Ubunut 16.04"
+title: "Building Tensorflow with OpenCL support on Ubuntu 16.04"
 description: ""
 category: 
 tags: [ubuntu tensorflow opencl amdgpu-pro]
@@ -9,7 +9,7 @@ tags: [ubuntu tensorflow opencl amdgpu-pro]
 
 ## Overview
 
-In this post I will describe the steps required to get Tensorflow running with OpenCL on an AMD GPU. So lets get into it:
+In this post I will describe the steps required to get Tensorflow running with OpenCL on an AMD GPU.
 
 ### Install AMDGPU-PRO Drivers
 
@@ -45,12 +45,12 @@ Restart your terminal and you have pyenv installed. Now install a python (I'll u
 sudo apt install -y make build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm libncurses5-dev xz-utils tk-dev
 env PYTHON_CONFIGURE_OPTS="--enable-shared" MAKEOPTS="-j 8" pyenv install 3.6.5
 pyenv local 3.6.5
-pip install wheel
+pip install wheel numpy
 ```
 
 ### Get The ComputeCPP SYCL Implementation
 
-Tensorflow uses the SYCL standard to convert CUDA code into OpenCL code. There is an open source template based library called [triSYCL](https://github.com/triSYCL/triSYCL). It requires c++17 support and thus you probably need to build your own gcc from a recent release. I won't cover it here but you can if you want to.
+Tensorflow can use the [SYCL](https://www.khronos.org/sycl) interface to seamlessly run device agnostic c++ code on an OpenCL enabled device. There is an open source template based library called [triSYCL](https://github.com/triSYCL/triSYCL). It requires c++17 support and thus you probably need to build your own gcc from a recent release. I won't cover it here but you can if you want to.
 
 Sign up here and get your computecpp library:
 
@@ -63,7 +63,7 @@ sudo mv ComputeCpp-CE-0.6.1-Ubuntu-16.04-64bit /usr/local/computecpp
 
 ### Get Tensorflow with experimental opencl support
 
-This version of tensorflow is maintained by a guy who works at ComputeCPP, and is highly experimental, expect it to change in the future:
+This fork of tensorflow is maintained by someone from Codeplay, who make ComputeCPP. It's highly experimental, expect it to change in the future. We use the dev/amd_gpu branch which is currently under active development:
 
 ```bash
 git clone https://github.com/lukeiwanski/tensorflow
@@ -73,7 +73,7 @@ git checkout dev/amd_gpu
 pyenv local 3.6.5
 ```
 
-Now you to build tensorflow, you need bazel installed if you don't have it already. Get the latest release from here:
+In order to build tensorflow, you need to use Google's bazel build system:
 
 ```bash
 wget https://github.com/bazelbuild/bazel/releases/download/0.11.1/bazel_0.11.1-linux-x86_64.deb
@@ -82,7 +82,7 @@ sudo dpkg -i bazel_0.11.1-linux-x86_64.deb
 
 ### Environment and Building
 
-You now need to configure and build tensorflow, from the tensorflow directory run:
+You can now configure and build tensorflow, from the tensorflow directory run:
 
 ```bash
 ./configure
@@ -92,11 +92,10 @@ I used the following options (press enter to get the defaults):
 
 ```bash
 $ ./configure 
-WARNING: Running Bazel server needs to be killed, because the startup options are different.
 You have bazel 0.11.1 installed.
-Please specify the location of python. [Default is /scratch/home-link/.pyenv/versions/3.6.5/bin/python]: 
+Please specify the location of python. [Default is /home/user/.pyenv/versions/3.6.5/bin/python]: 
 
-Please input the desired Python library path to use.  Default is [/scratch/home-link/.pyenv/versions/3.6.5/lib/python3.6/site-packages]
+Please input the desired Python library path to use.  Default is [/home/user/.pyenv/versions/3.6.5/lib/python3.6/site-packages]
 
 Do you wish to build TensorFlow with jemalloc as malloc support? [Y/n]: Y
 jemalloc as malloc support will be enabled for TensorFlow.
@@ -178,9 +177,9 @@ export PATH=/usr/local/computecpp/bin:/opt/amdgpu-pro/bin:$PATH
 
 Here's some explanation:
 
-1. `OPENCL_VENDOR_PATH` is where libOpenCL.so will look for the device library
+1. `OPENCL_VENDOR_PATH` is where libOpenCL.so will look for `.icd` files which point to a specific library for a driver. In our case it's the `libamdocl64.so`, each one will appear as a different vendor, so you could install [pocl](https://github.com/pocl/pocl) or [oclgrind](https://github.com/jrprice/Oclgrind)
 2. `LD_LIBRARY_PATH` is where the system looks for shared object files
-3. `PATH` is where the system looks like for executable files. The two listed contain clinfo and computecpp_info
+3. `PATH` is where the system looks like for executable files. The two listed above contain clinfo and computecpp_info
 
 Run `clinfo` and you should get something like this describing your GPU(s):
 
@@ -333,7 +332,7 @@ https://computecpp.codeplay.com/releases/v0.6.1/platform-support-notes
 ```
 
 ### Verification
-You can now quickly check that everything installed correctly:
+You can now quickly check that everything installed correctly (don't run this from the tensorflow source directory, you'll run into issues):
 
 ```bash
 cd ~
@@ -399,6 +398,7 @@ Epoch 9/10
 7500/7500 [==============================] - 0s 26us/step - loss: 0.5195 - val_loss: 0.5377
 Epoch 10/10
 7500/7500 [==============================] - 0s 25us/step - loss: 0.5160 - val_loss: 0.5020
+
 Train on 7500 samples, validate on 2500 samples
 Epoch 1/10
 7500/7500 [==============================] - 92s 12ms/step - loss: nan - val_loss: nan
@@ -423,7 +423,7 @@ Epoch 10/10
 
 ```
 
-As you can see, in the GPU run, it takes a long time to first run the model, and significantly longer to run each training step (also that the GPU learnt nothing). You can play with the code to see if you can get it to work but waiting ~90s for the model to start the first epoch is a pain for testing.
+As you can see, in the GPU run, it takes a long time to run the first epoch of the GPU the model, and significantly longer to run each training step (also that the GPU learnt nothing). You can play with the code to see if you can get it to work but waiting ~90s for the model to start the first epoch is a pain for testing.
 
 It might just be I have an old workstation card, or that there is a lot of overhead involved in using SYCL, I hope this helps someone else!
 
