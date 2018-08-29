@@ -84,7 +84,7 @@ JB :
   comments :
     provider : disqus
     disqus :
-      short_name : jonnoftwgithubcom
+      short_name : jonnoftw-github-com
     livefyre :
       site_id : 123
     intensedebate :
