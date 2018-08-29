@@ -65,8 +65,16 @@ You will now have a self contained python install in `$HOME/.pyenv/versions/3.6.
 
 # Code
 
-We also need pick a task to optimise! Hyperas uses templates to generate the code that hyperopt can use, so you need to follow this template closely. Create a file called: `optimise_task.py`. We'll find the optimal layer size 
-and dropout parameters (from within the search space, see `l1_size` and `l1_dropout` variables) for a single layer dense network to solve the MNIST task:
+We also need pick a task to optimise! Hyperas uses templates to generate the code that hyperopt can use, so you need to follow this template closely. Create a file called: `optimise_task.py` as described blow. We'll find the optimal layer size 
+and dropout parameters (from within the search space, see `l1_size` and `l1_dropout` variables) for a single layer dense network to solve the MNIST task. The documentation for
+the different parameter distributions is here: https://github.com/hyperopt/hyperopt/wiki/FMin#21-parameter-expressions
+
+For our purposes:
+
+* quniform is a normal distribution of discrete values with a given interval and step. In ours, it will return floats in the range [12,256] with step=4
+* uniform is a normal distribution of continuous values
+
+Many more distributions are available in hyperas.distributions: https://github.com/maxpumperla/hyperas/blob/master/hyperas/distributions.py
 
 ```python
 from hyperas import optim
@@ -147,9 +155,8 @@ if __name__ == "__main__":
     print(best_run)
 ```
 
-Note the name of the experiment key: `mnist_test`, this will be the key in the `jobs` collection of the `jobs` database in mongodb. After every model has completed, it will be stored in mongodb. It may be 
-possible to store the weights in the output document (the output of `model.get_weights()`, but mongodb has a limit of 4MB per document. To get around this, GridFS is used to transprently store blobs in the database of
-the model itself.
+Note the name of the experiment key: `mnist_test`, this will be the key in the `jobs` collection of the `jobs` database in mongodb. After every model has completed, it will be stored in mongodb. It may be possible to store the weights in the output document (the output of `model.get_weights()`, but mongodb has a limit of 4MB per document. To get around this, GridFS is used to transprently store blobs in the database of the model itself.
+
 
 I've also stored the duration in the result object as well, since you may find 2 models with very similar loss, but the one with slightly better loss may have significantly higher runtime.
 
@@ -198,7 +205,18 @@ hyperopt-mongo-worker --mongo="mongo://username:password@mongodb.host:27017/jobs
 ```
 
 Now you can run `~/hyperopt_job/job.sh` on your worker machines! Keep in mind that they need to be able to access the mongodb.
- The workers will continue running jobs until you have reached `max_evals` as defined at the end of `optimise_task.py`.
+ The workers will continue running jobs until you have reached `max_evals` as defined at the end of `optimise_task.py`. 
+ 
+You can also have this script fetch a compressed version of your `.pyenv` folder from a URL if it doesn't already exist, by prepending the following lines:
+
+```bash
+if [ ! -d "$HOME/.pyenv" ]; then
+    wget https://url.to/mypenv.zip
+    unzip mypyenv.zip
+fi
+```
+
+If your home drive on the worker machines has limited space, consider unzipping to a `tmp` directory and setting the `PYENV_ROOT` environment variable accordingly.
 
 The problem with this can be that you need to:
 
@@ -220,11 +238,11 @@ Once all your jobs are done, you can look through your results using a mongodb b
 and deserialize your model:
 
 ```python
-from pymongo import MongoClient
+from pymongo import MongoClient, ASCENDING
 from keras.models import load_model
 import tempfile
 c = MongoClient('mongodb://username:pass@mongodb.host:27017/jobs')
-best_model = c['jobs']['jobs'].find_one({'exp_key': 'mnist_test', 'result.status': 'ok'}, sort=[('result.loss', 1)])
+best_model = c['jobs']['jobs'].find_one({'exp_key': 'mnist_test', 'result.status': 'ok'}, sort=[('result.loss', ASCENDING)])
 temp_name = tempfile.gettempdir()+'/'+next(tempfile._get_candidate_names()) + '.h5'
 with open(temp_name, 'wb') as outfile:
     outfile.write(best_model['result']['model_serial'])
@@ -232,7 +250,6 @@ model = load_model(temp_name)
 # do things with your model here
 model.summary()
 ```
-
 
 You can use the following to visualise the results with a subset of your search space (typical search spaces with have more than 2 parameters
 so it may not be obvious which one (or combination thereof) has the most significant impact on your model performance):
@@ -247,7 +264,7 @@ import numpy as np
 if __name__ == "__main__":
     # get the data
     jobs = MongoClient('mongodb://username:pass@mongodb.host:27017/jobs')['jobs']['jobs']
-    cursor = jobs.find({'exp_key': 'mnist_test', 'result.status': 'ok'}).sort('result.metrics.rmse')
+    cursor = jobs.find({'exp_key': 'mnist_test', 'result.status': 'ok'})
     results = defaultdict(lambda: defaultdict(list))
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
