@@ -3,7 +3,7 @@ layout: post
 title: "Building Tensorflow with OpenCL support on Ubuntu 16.04"
 description: ""
 category: 
-tags: [ubuntu tensorflow opencl amdgpu-pro]
+tags: [ubuntu, tensorflow, opencl, amdgpu-pro]
 ---
 {% include JB/setup %}
 

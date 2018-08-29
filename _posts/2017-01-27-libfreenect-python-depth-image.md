@@ -3,7 +3,7 @@ layout: post
 title: "libfreenect Python Depth Image"
 description: ""
 category: 
-tags: []
+tags: [libfreenect, python]
 ---
 {% include JB/setup %}
 
