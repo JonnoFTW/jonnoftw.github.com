@@ -29,6 +29,7 @@ intelligently iterating through a search space of the parameters you want to opt
  
  
 Luckily there are python libraries that do all this hard work for us!
+
 # Requirements
 
 You will need:
@@ -37,17 +38,18 @@ You will need:
   * theano, tensorflow or tensorflow-gpu
   * hyperopt
   * hyperas
-  * pymongo 
-* Mongodb with a `jobs` database
+  * pymongo
+  * pssh 
 * A bunch of machines with all of the above installed
-* pssh
+* A single Mongodb instance with a `jobs` database
+
 
 I strongly recommend using pyenv to use an up to date version of python and to prevent our installed packages from conflicting with system ones.
 If you have access to a network drive available to all your machines, set `$PYENV_ROOT` to something they can all see (or at least a common path on all the machines).
 Install these using (swap tensorflow with whatever keras backend you want to use, one of: `theano tensorflow-gpu tensorflow cntk`):
 
 ```bash
-echo 'export PYENV_ROOT="$HOME/.pyenv"
+export PYENV_ROOT="$HOME/.pyenv"
 curl -L https://github.com/pyenv/pyenv-installer/raw/master/bin/pyenv-installer | bash
 echo 'export PATH="$HOME/.pyenv/bin:$PATH"' >> ~/.bash_profile
 echo 'eval "$(pyenv init -)"' >> ~/.bash_profile
@@ -97,8 +99,10 @@ def create_model(x_train, y_train, x_test, y_test):
     """
     Create your model...
     """
+    {% raw %}
     l1_size = {{quniform(12, 256, 4)}}
     l1_dropout = {{uniform(0.001, 0.7)}}
+    {% endraw %}
     params = {
         'l1_size': l1_size,
         'l1_dropout': l1_dropout
